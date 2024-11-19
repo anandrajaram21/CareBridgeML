@@ -1,13 +1,15 @@
 from typing import Annotated
-from ml_functions import classify, transcribe
 from fastapi import FastAPI, File, UploadFile
 
 app = FastAPI()
 
 
 @app.post("/audio")
-async def create_upload_file(file: Annotated[bytes, File()]):
-    transcribed_text = transcribe(file)
+async def transcribe_and_translate(file: Annotated[bytes, File()]):
+    with open("audio.wav", "wb") as f:
+        f.write(file)
+
+    transcribed_text = transcribe("audio.wav")
 
     candidate_labels = [
         "food",
@@ -18,9 +20,9 @@ async def create_upload_file(file: Annotated[bytes, File()]):
         "other",
     ]
 
-    classification = classify(transcribed_text.text, candidate_labels)
+    classification = classify(transcribed_text, candidate_labels)
 
     return {
-        "transcribed_text": transcribed_text.text,
+        "transcribed_text": transcribed_text,
         "classification": classification,
     }
